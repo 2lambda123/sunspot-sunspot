@@ -1,6 +1,6 @@
-require File.expand_path('../spec_helper', File.dirname(__FILE__))
+require File.expand_path("../spec_helper", File.dirname(__FILE__))
 
-describe 'Atomic Update feature' do
+describe "Atomic Update feature" do
   before :all do
     Sunspot.remove_all
   end
@@ -13,49 +13,49 @@ describe 'Atomic Update feature' do
   end
 
   def find_indexed_post(id)
-    hit = Sunspot.search(Post).hits.find{ |h| h.primary_key.to_i == id }
+    hit = Sunspot.search(Post).hits.find { |h| h.primary_key.to_i == id }
     expect(hit).not_to be_nil
     hit
   end
 
-  it 'updates single record fields one by one' do
-    post = Post.new(title: 'A Title', featured: true)
+  it "updates single record fields one by one" do
+    post = Post.new(title: "A Title", featured: true)
     Sunspot.index!(post)
-    
+
     validate_hit(find_indexed_post(post.id), title: post.title, featured: post.featured)
 
-    Sunspot.atomic_update!(Post, post.id => {title: 'A New Title'})
-    validate_hit(find_indexed_post(post.id), title: 'A New Title', featured: true)
+    Sunspot.atomic_update!(Post, post.id => {title: "A New Title"})
+    validate_hit(find_indexed_post(post.id), title: "A New Title", featured: true)
 
     Sunspot.atomic_update!(Post, post.id => {featured: false})
-    validate_hit(find_indexed_post(post.id), title: 'A New Title', featured: false)
+    validate_hit(find_indexed_post(post.id), title: "A New Title", featured: false)
   end
 
-  it 'updates fields for multiple records' do
-    post1 = Post.new(title: 'A First Title', featured: true)
-    post2 = Post.new(title: 'A Second Title', featured: false)
+  it "updates fields for multiple records" do
+    post1 = Post.new(title: "A First Title", featured: true)
+    post2 = Post.new(title: "A Second Title", featured: false)
     Sunspot.index!(post1, post2)
 
     validate_hit(find_indexed_post(post1.id), title: post1.title, featured: post1.featured)
     validate_hit(find_indexed_post(post2.id), title: post2.title, featured: post2.featured)
 
-    Sunspot.atomic_update!(Post, post1.id => {title: 'A New Title'}, post2.id => {featured: true})
-    validate_hit(find_indexed_post(post1.id), title: 'A New Title', featured: true)
-    validate_hit(find_indexed_post(post2.id), title: 'A Second Title', featured: true)
+    Sunspot.atomic_update!(Post, post1.id => {title: "A New Title"}, post2.id => {featured: true})
+    validate_hit(find_indexed_post(post1.id), title: "A New Title", featured: true)
+    validate_hit(find_indexed_post(post2.id), title: "A Second Title", featured: true)
   end
 
-  it 'sets array value' do
-    post = Post.new(title: 'A Title', tags: %w(tag1 tag2))
+  it "sets array value" do
+    post = Post.new(title: "A Title", tags: %w[tag1 tag2])
     Sunspot.index!(post)
     validate_hit(find_indexed_post(post.id), title: post.title, tag_list: post.tags)
 
-    updated_array = %w(tag3 tag4)
-    Sunspot.atomic_update!(Post, post.id => { tag_list: updated_array })
+    updated_array = %w[tag3 tag4]
+    Sunspot.atomic_update!(Post, post.id => {tag_list: updated_array})
     validate_hit(find_indexed_post(post.id), title: post.title, tag_list: updated_array)
   end
 
-  it 'clears field value properly' do
-    post = Post.new(title: 'A Title', tags: %w(tag1 tag2), featured: true)
+  it "clears field value properly" do
+    post = Post.new(title: "A Title", tags: %w[tag1 tag2], featured: true)
     Sunspot.index!(post)
     validate_hit(find_indexed_post(post.id), title: post.title, tag_list: post.tags, featured: true)
 
